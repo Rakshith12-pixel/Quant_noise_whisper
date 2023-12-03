@@ -74,12 +74,12 @@ def quant_noise(module, p, block_size):
     assert isinstance(module, (nn.Linear, nn.Embedding, nn.Conv2d))
 
     # test whether module.weight has the right sizes wrt block_size
-    is_conv = module.weight.ndim == 4
+    is_conv = False #module.weight.ndim == 4 is false in our case
 
     # 2D matrix
     if not is_conv:
         assert (
-            module.weight.size(1) % block_size == 0
+            list(module.parameters()[0]).shape(1) % block_size == 0
         ), "Input features must be a multiple of block sizes"
 
     # 4D matrix
@@ -356,7 +356,7 @@ def train(args, accelerator):
     model, optimizer, train_dataloader, eval_dataloader, lr_scheduler = accelerator.prepare(
         model, optimizer, train_dataloader, eval_dataloader, lr_scheduler
     )
-
+    model.apply(quant_noise) # applying quantnoise on the modules
     global_step = 0  # tracks total steps
     total_loss = 0  # total loss before each eval
 
