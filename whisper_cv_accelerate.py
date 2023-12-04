@@ -44,7 +44,7 @@ while root.split('/')[-1] != 'speech-processing':
 
 import torch
 import torch.nn as nn
-
+from torch.nn.utils import parameters_to_vector
 
 def quant_noise(module, p, block_size):
     """
@@ -75,8 +75,9 @@ def quant_noise(module, p, block_size):
 
     # test whether module.weight has the right sizes wrt block_size
     is_conv = False #module.weight.ndim == 4 is false in our case
+    
     #skip activations and any modules that do not contain any parameters
-    if "GELU" in str(module.__class__):
+    if "GELU" or "Conv1d" or "layer_norm" in str(module.__class__):
         return module
 
     # Check if the module has parameters
@@ -90,7 +91,7 @@ def quant_noise(module, p, block_size):
     # 2D matrix
     if not is_conv:
         assert (
-            list(module.parameters()[0]).shape(1) % block_size == 0
+            parameters_to_vector(list(module.parameters()[0])).shape(1) % block_size == 0
         ), "Input features must be a multiple of block sizes"
 
     # 4D matrix
