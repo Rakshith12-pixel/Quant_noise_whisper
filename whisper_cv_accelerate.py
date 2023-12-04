@@ -75,6 +75,17 @@ def quant_noise(module, p, block_size):
 
     # test whether module.weight has the right sizes wrt block_size
     is_conv = False #module.weight.ndim == 4 is false in our case
+    #skip activations and any modules that do not contain any parameters
+    if "GELU" in str(module.__class__):
+        return module
+
+    # Check if the module has parameters
+    if not list(module.parameters()):
+        return module
+
+    # Skip layers with GELU activation
+#    assert list(module.parameters())[0] is not None
+    print(module)
 
     # 2D matrix
     if not is_conv:
